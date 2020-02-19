@@ -1,0 +1,136 @@
+<template>
+  <el-menu class="navbar" mode="horizontal">
+    <hamburger :toggle-click="toggleSideBar" :is-active="sidebar.opened" class="hamburger-container"/>
+    <breadcrumb />
+    
+    <div class="right-menu">
+      <template v-if="device!=='mobile'">
+        <div class="right-menu-item hover-effect notices"><svg-icon icon-class="message" /></div>
+      
+      </template>
+      <div class="user_name right-menu-item">{{name}}</div>
+      <el-dropdown class="avatar-container right-menu-item" trigger="click">
+        <div class="avatar-wrapper">
+          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+          <i class="el-icon-caret-bottom"/>
+        </div>
+        <el-dropdown-menu slot="dropdown" class="user-dropdown">
+          <router-link class="inlineBlock" to="/">
+            <el-dropdown-item>
+              首页
+            </el-dropdown-item>
+          </router-link>
+          <router-link class="inlineBlock" to="/pwd" v-if="this.isErp" >
+            <el-dropdown-item >
+              修改密码
+            </el-dropdown-item>
+          </router-link>
+          <el-dropdown-item divided>
+            <span style="display:block;" @click="logout">注销</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </div>
+  </el-menu>
+</template>
+
+<script>
+import { mapGetters } from 'vuex'
+import Breadcrumb from '@/components/Breadcrumb'
+import Hamburger from '@/components/Hamburger'
+
+export default {
+  components: {
+    Breadcrumb,
+    Hamburger
+  },
+  computed: {
+    ...mapGetters([
+      'name',
+      'device',
+      'sidebar',
+      'avatar',
+      'erp'
+    ]),
+    isErp() {
+      return this.erp=="0"
+    }
+  },
+  methods: {
+    toggleSideBar() {
+      this.$store.dispatch('ToggleSideBar')
+    },
+    logout() {
+      this.$store.dispatch('LogOut').then(() => {
+        this.$store.dispatch('FedLogOut').then(() => {
+          if(this.erp=="1"){
+            window.location= process.env.ERP_LOGOUT_HREF
+          }else{
+            location.reload() // 为了重新实例化vue-router对象 避免bug
+          }
+        })
+      })
+    }
+  }
+}
+</script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+.navbar {
+  height: 45px;
+  line-height: 36px;
+  border-radius: 0px !important;
+  .hamburger-container {
+    line-height: 50px;
+    height: 45px;
+    float: left;
+    padding: 0 10px;
+  }
+  .right-menu {
+    float: right;
+    height: 100%;
+    &:focus{
+     outline: none;
+    }
+    .right-menu-item {
+      display: inline-block;
+      margin: 0 8px;
+    }
+    .notices{
+      vertical-align: 13px;
+    }
+    .user_name{
+      cursor: pointer;
+      vertical-align: 13px;
+      font-size:13.5px;
+    }
+    .screenfull {
+      position: absolute;
+      right: 90px;
+      top: 16px;
+    }
+    .avatar-container {
+      height: 45px;
+      margin-right: 30px;
+      .avatar-wrapper {
+        margin-top: 4px;
+        position: relative;
+        .user-avatar {
+          cursor: pointer;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+        }
+        .el-icon-caret-bottom {
+          cursor: pointer;
+          position: absolute;
+          right: -20px;
+          top: 25px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+</style>
+
